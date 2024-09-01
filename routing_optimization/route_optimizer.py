@@ -12,7 +12,7 @@ class PacketRouteOptimizer:
     def calculate_packet_vendor_routing(
         packet_volume: Dict[PacketType, float],
         vendor_data: Dict[Vendor, VendorTarget],
-        packet_vendors: Dict[PacketType, List[Vendor]]
+        packet_vendors: Dict[PacketType, List[Vendor]],
     ) -> Dict[PacketType, Dict[Vendor, float]]:
         """
         Given a total volume of packets, determine the optimal way to
@@ -39,7 +39,8 @@ class PacketRouteOptimizer:
         packet_types = [p for p in packet_volume.keys()]
         num_packet_types = len(packet_types)
 
-        # Decision variables: fraction of each package type to ship with each vendor
+        # Decision variables:
+        # Fraction of each package type to ship with each vendor
         x = []
         for i, packet_type in enumerate(packet_types):
             package_vendors = []
@@ -54,7 +55,9 @@ class PacketRouteOptimizer:
 
         # Objective function: minimize total cost
         total_cost = solver.Sum(
-            packet_volume[packet_type] * vendor_data[vendor].cost_per_packet * x[i][j]
+            packet_volume[packet_type]
+            * vendor_data[vendor].cost_per_packet
+            * x[i][j]
             for i, packet_type in enumerate(packet_types)
             for j, vendor in enumerate(vendors)
         )
@@ -64,13 +67,17 @@ class PacketRouteOptimizer:
         for i in range(num_packet_types):
             solver.Add(solver.Sum(x[i][j] for j in range(num_vendors)) == 1)
 
-        # Constraint: total packages shipped by each vendor must meet minimum requirements
+        # Constraint: t
+        # Total packages shipped by each vendor must meet minimum requirements
         for j, vendor in enumerate(vendors):
             total_shipped_by_vendor = solver.Sum(
-                packet_volume[packet_type] * x[i][j] for i, packet_type in enumerate(packet_types)
+                packet_volume[packet_type] * x[i][j]
+                for i, packet_type in enumerate(packet_types)
             )
             if "min_packages" in vendors[j]:
-                solver.Add(total_shipped_by_vendor >= vendors[j]["min_packages"])
+                solver.Add(
+                    total_shipped_by_vendor >= vendors[j]["min_packages"]
+                )
 
         # Solve the problem
         status = solver.Solve()
@@ -82,10 +89,14 @@ class PacketRouteOptimizer:
                 print(f"Package Type {i}:")
                 for j, vendor in enumerate(vendors):
                     if x[i][j].solution_value() > 0:
-                        print(f"  Vendor {j}: {x[i][j].solution_value() * 100:.2f}%")
+                        print(
+                            f"  Vendor {j}: {x[i][j].solution_value() * 100:.2f}%"  # noqa
+                        )
                         if packet_type not in packet_vendor_routes:
                             packet_vendor_routes[packet_type] = dict()
-                        packet_vendor_routes[packet_type][vendor] = x[i][j].solution_value()
+                        packet_vendor_routes[packet_type][vendor] = x[i][
+                            j
+                        ].solution_value()
             print("Total cost =", solver.Objective().Value())
         else:
             print("The problem does not have an optimal solution.")

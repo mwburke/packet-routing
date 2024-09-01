@@ -35,7 +35,9 @@ class ForecastGenerator:
                 mean, std_dev, percentile
             )
 
-    def _calculate_adjusted_forecast(mean: float, std_dev: float, percentile: float) -> float:
+    def _calculate_adjusted_forecast(
+        mean: float, std_dev: float, percentile: float
+    ) -> float:
         """
         Calculate the adjusted forecast based on the mean, standard deviation, and
         percentile of the normal distribution. This allows the user to be more or

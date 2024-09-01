@@ -37,14 +37,17 @@ class PriceTierOptimizer:
         if not solver:
             return None
 
-        # Decision variables: number of packets to ship with each vendor at each tier
+        # Decision variables:
+        # Number of packets to ship with each vendor at each tier
         x = []
         for vendor in vendors:
             vendor_tiers = []
             for j in range(len(vendor.price_tiers)):
                 vendor_tiers.append(
                     solver.IntVar(
-                        0, solver.infinity(), f"x_{i}_{j}_{vendor.vendor.value}"
+                        0,
+                        solver.infinity(),
+                        f"x_{i}_{j}_{vendor.vendor.value}",
                     )
                 )
             x.append(vendor_tiers)
@@ -97,7 +100,9 @@ class PriceTierOptimizer:
                 vendor_volume[vendors[i].vendor] = VendorTarget(
                     volume=vendor_sum,
                     minimum_volume=vendors[i].price_tiers[j]["minimum_volume"],
-                    cost_per_packet=vendors[i].price_tiers[j]["cost_per_packet"],
+                    cost_per_packet=vendors[i].price_tiers[j][
+                        "cost_per_packet"
+                    ],
                 )
             print("Total cost =", solver.Objective().Value())
         else:
